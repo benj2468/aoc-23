@@ -1,5 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
+use itertools::Itertools;
+
 use crate::AOCInput;
 
 #[derive(Debug)]
@@ -105,6 +107,45 @@ impl From<AOCInput> for Day3 {
     }
 }
 
+#[derive(Debug)]
+struct Day3_2(u32);
+
+impl From<AOCInput> for Day3_2 {
+    fn from(value: AOCInput) -> Self {
+        let data = &value.0.lines().collect_vec();
+
+        let regex = regex::Regex::new(r"\d+").unwrap();
+
+        let out: u32 = value
+            .0
+            .lines()
+            .enumerate()
+            .flat_map(|(i, line)| {
+                regex.find_iter(line).filter_map(move |matc| {
+                    let start = matc.start();
+                    let x_range = start.saturating_sub(1)
+                        ..std::cmp::min(start + matc.len() + 1, data[0].len());
+                    let y_range = i.saturating_sub(1)..std::cmp::min(i + 2, data.len());
+
+                    x_range
+                        .cartesian_product(y_range)
+                        .into_iter()
+                        .any(|(x, y)| {
+                            data[y][x..x + 1]
+                                .chars()
+                                .next()
+                                .map(|c| !c.is_numeric() && c != '.')
+                                .unwrap_or_default()
+                        })
+                        .then_some(matc.as_str().parse::<u32>().unwrap())
+                })
+            })
+            .sum();
+
+        Self(out)
+    }
+}
+
 #[test]
 fn tester() {
     let input = r#"467..114..
@@ -119,7 +160,9 @@ fn tester() {
 .664.598.."#;
 
     println!("{:?}", Day3::from(AOCInput(input.to_string())).part1());
-    println!("{:?}", Day3::from(AOCInput(input.to_string())).part2());
+    // println!("{:?}", Day3::from(AOCInput(input.to_string())).part2());
+
+    println!("{:?}", Day3_2::from(AOCInput(input.to_string())));
 }
 
 #[test]
@@ -127,7 +170,8 @@ fn part1() {
     use crate::AOCInput;
     let input = AOCInput::from("src/day3/part1.txt");
 
-    println!("{:?}", Day3::from(input).part1());
+    println!("{:?}", Day3::from(input.clone()).part1());
+    println!("{:?}", Day3_2::from(input));
 }
 
 #[test]

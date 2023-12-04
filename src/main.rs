@@ -1,5 +1,6 @@
 use std::path::Path;
 
+#[derive(Clone)]
 pub struct AOCInput(pub String);
 
 impl<T> From<T> for AOCInput
@@ -23,6 +24,7 @@ impl AsRef<String> for AOCInput {
 mod day1;
 mod day2;
 mod day3;
+mod day4;
 
 fn main() {
     println!("Hello, world!");
